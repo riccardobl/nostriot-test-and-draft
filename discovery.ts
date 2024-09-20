@@ -74,6 +74,7 @@ export async function announceDevice (
         content: JSON.stringify(device),
         tags: [
             ["h", groupId],
+            ["client", "nostriot"]
         ]
     }
 
