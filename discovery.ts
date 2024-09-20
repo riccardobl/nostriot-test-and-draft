@@ -5,6 +5,7 @@ useWebSocketImplementation(WebSocket)
 
 import {  hexToBytes } from '@noble/hashes/utils' ;
 import crypto from 'crypto';
+import { groupEncrypt,groupDecrypt } from './utils';
 
 import { finalizeEvent, generateSecretKey, getPublicKey, nip04, VerifiedEvent, SimplePool, verifyEvent } from 'nostr-tools';
 
@@ -75,14 +76,9 @@ export async function announceDevice (
             ["h", groupId],
         ]
     }
-    // encrypt content
-    const iv = crypto.randomFillSync(new Uint8Array(16));
-    const ivBase64 = Buffer.from(iv.buffer).toString('base64')
-    // derive 32 bytes key from group secret
-    const secretKey = crypto.createHash('sha256').update(groupSecret).digest();
-    const cipher = crypto.createCipheriv('aes-256-cbc', secretKey, iv);
-    event.content = cipher.update(event.content, 'utf8', 'base64') + cipher.final('base64')    
-    event.tags.push(["encrypted", "aes-256-cbc", ivBase64]);
+
+    event.content = await groupEncrypt(groupSecret, event.content);
+    event.tags.push(["nostriot/encrypted"]);
 
     // sign event
     const verifiedEvent:VerifiedEvent =  finalizeEvent(event, hexToBytes(devicePrivateKey));    
@@ -111,20 +107,14 @@ export async function discoverDevices(
             "#h": [groupId],
             "since": since
         }], {
-            onevent: (event) => {
+            onevent: async (event) => {
                 try {
                     if(!verifyEvent(event)) throw new Error("Invalid event (bad signature)");
-                    const encryptedTag = event.tags.find(([k, v]) => k === "encrypted");
-                    if (!encryptedTag) throw new Error("Invalid event (missing encrypted tag)");
-                    const [_, algorithm, ivB64] = encryptedTag;
-                    if (algorithm !== "aes-256-cbc") throw new Error("Invalid event (unsupported encryption algorithm)");
-                    if (!ivB64) throw new Error("Invalid event (missing IV)");
-                    const iv = Buffer.from(ivB64, 'base64');
-                    const encryptedContentB64 = event.content;
-                    // derive 32 bytes key from group secret
-                    const secretKey = crypto.createHash('sha256').update(groupSecret).digest();
-                    const decipher = crypto.createDecipheriv('aes-256-cbc',secretKey, iv);
-                    const content = decipher.update(encryptedContentB64, 'base64', 'utf8') + decipher.final('utf8');                    
+                    const nostriotEncryptTag = event.tags.find(([k, v]) => k === "nostriot/encrypted");
+                    let content = event.content;
+                    if (nostriotEncryptTag) {
+                        content = await groupDecrypt(groupSecret, content);
+                    }              
                     const device:Device = JSON.parse(content);
                     const discoveredDevice:DiscoveredDevice = {
                         publicKey: event.pubkey,
