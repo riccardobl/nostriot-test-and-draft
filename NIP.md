@@ -1,3 +1,31 @@
+# Device discoverability
+
+Devices periodically send a group encrypted kind 1 event tagged with h:groupId.
+
+Structure:
+
+(TODO)
+```
+{
+    kind: 1,
+    content: JSON.stringify({
+        // device specs
+        // see ./discovery.ts for definition
+    }),
+    tags: [
+        ["h", groupId],
+        ["client", "nostriot"]
+    ]
+}
+
+```
+
+other devices and apps can discover devices by subscribing to `{kinds:[1], #h:[groupId]}` nb. events that fail the decryption should be discarded as invalid.
+When a device is discovered, its public key should be stored locally for future communication using nip-90 job requests, or to fetch its status using (?)(TBD).
+
+
+
+
 # Group Encryption
 
 In *nostriot*, events can be encrypted for a group of users and devices using the same algorithm as **NIP-04**, but with a pre-shared private key, referred to as the *group secret*.
