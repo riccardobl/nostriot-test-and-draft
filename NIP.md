@@ -1,3 +1,5 @@
+draft, poorly written, and incomplete
+
 # Device discoverability
 
 Devices periodically send a group encrypted kind 1 event tagged with h:groupId.
@@ -22,6 +24,34 @@ Structure:
 
 other devices and apps can discover devices by subscribing to `{kinds:[1], #h:[groupId]}` nb. events that fail the decryption should be discarded as invalid.
 When a device is discovered, its public key should be stored locally for future communication using nip-90 job requests, or to fetch its status using (?)(TBD).
+
+
+# Remote setup and installation
+
+Devices, that support remote setup, come with a static nostriot+admin:// url that changes only when the device is manually reset (ie. by pressing the reset button, reflashing the firmware, etc).
+
+The url has this format:
+
+```
+nostriot+admin://<admin-privkey>@<device-pubkey>?relay=relay-url
+```
+(can have multiple relay params)
+
+Remote setup can be initialized by sending a setup-event (TBD) to the relay urls, targeting the device-pubkey and signed with the admin-privkey.
+
+As security measure, the device can lock itself after the first setup, until it is manually reset.
+
+
+# Group joining
+
+A device can be configured to join a group by providing one or more group urls during the setup phase.
+
+A group url is constructed as follows:
+
+```
+nostriot://<group-secret>@<group-id>?relay=relay-url
+```
+(can have multiple relay params)
 
 
 
