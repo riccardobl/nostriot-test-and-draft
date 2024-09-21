@@ -4,27 +4,19 @@ useWebSocketImplementation(WebSocket)
 
 
 import {  hexToBytes } from '@noble/hashes/utils' ;
-import crypto from 'crypto';
 import { groupEncrypt,groupDecrypt } from './utils';
-
-import { finalizeEvent, generateSecretKey, getPublicKey, nip04, VerifiedEvent, SimplePool, verifyEvent } from 'nostr-tools';
+import { finalizeEvent, VerifiedEvent, SimplePool, verifyEvent } from 'nostr-tools';
 
 export type InputOutputTypes = string | number | boolean | Array<string> | Array<number> | Array<boolean>;
 export type InputOutputTypeDescriptor = 'string' | 'int' | 'float' | 'boolean' | 'string[]' | 'int[]' | 'float[]' | 'boolean[]' ;
 export type ActionInputOutput = {
-    name: string,
-    description: string,
+    name?: string,
+    description?: string,
     type: InputOutputTypeDescriptor,
     choices?: { 
-        options: [
-            {
-                id: string,
-                name: string,
-                description:string, 
-                value: InputOutputTypes
-            }
-        ]
-        selected: InputOutputTypes,
+        options: {
+            [key: string]: InputOutputTypes
+        }
         maxSelections: number
     },
     required: boolean,
@@ -32,29 +24,31 @@ export type ActionInputOutput = {
 };
 
 export type DeviceAction = {
-    name: string,
-    picture: string,
-    description: string,
+    name?: string,
+    picture?: string,
+    description?: string,
     inputs: { [key: string]: ActionInputOutput },
-    outputs: { [key: string]: ActionInputOutput }
+    outputs: { [key: string]: ActionInputOutput },
+    tags?: Array<Array<string>>
 }
 
-
-
 export type DeviceState = {
-    name: string,
-    description: string,
+    name?: string,
+    picture?: string,
+    description?: string,
     outputs: { [key: string]: ActionInputOutput },
-    filters?: { [key: string]: Array<String> }
+    filters?: { [key: string]: Array<String> },
+    tags?: Array<Array<string>>
 }
 
 export type Device = {
     name: string,
-    picture: string,
-    description: string
+    picture?: string,
+    description?: string
     actions: { [key: string]: DeviceAction },
     states: { [key: string]: DeviceState }
     relays?: Array<string>
+    tags?: Array<Array<string>>
 }
 
 export type DiscoveredDevice = {
