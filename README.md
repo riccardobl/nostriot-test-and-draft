@@ -2,14 +2,14 @@ draft, poorly written, and incomplete
 
 # Device discoverability
 
-Devices periodically send a group encrypted kind 1 event tagged with h:groupId.
+Devices periodically send a group encrypted kind 0 event tagged with h:groupId.
 
 Structure:
 
 (TODO)
 ```
 {
-    kind: 1,
+    kind: 0,
     content: JSON.stringify({
         // device specs
         // see ./discovery.ts for definition
@@ -22,7 +22,7 @@ Structure:
 
 ```
 
-other devices and apps can discover devices by subscribing to `{kinds:[1], #h:[groupId]}` nb. events that fail the decryption should be discarded as invalid.
+other devices and apps can discover devices by subscribing to `{kinds:[0], #h:[groupId]}` nb. events that fail the decryption should be discarded as invalid.
 When a device is discovered, its public key should be stored locally for future communication using nip-90 job requests, or to fetch its status using (?)(TBD).
 
 
@@ -33,7 +33,7 @@ Devices, that support remote setup, come with a static nostriot+admin:// url tha
 The url has this format:
 
 ```
-nostriot+admin://<admin-privkey>@<device-pubkey>?relay=relay-url
+nostriot+admin://<admin-privkey>@<device-pubkey>?relay=relay-url&metadata=<optional nip 01 metadata>&template=<optional_config_template>
 ```
 (can have multiple relay params)
 
@@ -49,7 +49,7 @@ A device can be configured to join a group by providing one or more group urls d
 A group url is constructed as follows:
 
 ```
-nostriot://<group-secret>@<group-id>?relay=relay-url
+nostriot://<group-secret>@<group-id>?relay=relay-url&metadata=<optional nip 01 metadata>
 ```
 (can have multiple relay params)
 
